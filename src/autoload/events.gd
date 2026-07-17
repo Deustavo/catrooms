@@ -7,3 +7,6 @@ signal level_started(level: int)
 
 ## Emitido quando o jogador alcança a saída do labirinto.
 signal exit_reached
+
+## Emitido quando a sensibilidade da câmera é alterada nas configurações.
+signal mouse_sensitivity_changed(value: float)

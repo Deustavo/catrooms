@@ -19,13 +19,13 @@ extends CharacterBody3D
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	mouse_sensitivity = GameManager.mouse_sensitivity
+	Events.mouse_sensitivity_changed.connect(_on_mouse_sensitivity_changed)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		_apply_mouse_look(event.relative)
-	elif event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event is InputEventMouseButton and event.pressed \
 			and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -52,6 +52,10 @@ func _physics_process(delta: float) -> void:
 func teleport_to(target_position: Vector3) -> void:
 	global_position = target_position
 	velocity = Vector3.ZERO
+
+
+func _on_mouse_sensitivity_changed(value: float) -> void:
+	mouse_sensitivity = value
 
 
 func _apply_mouse_look(relative: Vector2) -> void:

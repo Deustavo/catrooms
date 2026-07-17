@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://src/levels/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://src/maze/maze_builder.gd" id="2_builder"]
 [ext_resource type="PackedScene" path="res://src/player/player.tscn" id="3_player"]
 [ext_resource type="Script" path="res://src/ui/hud.gd" id="4_hud"]
+[ext_resource type="PackedScene" path="res://src/ui/menu/pause_menu.tscn" id="5_pause"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -37,3 +38,5 @@ offset_right = 600.0
 offset_bottom = 56.0
 theme_override_font_sizes/font_size = 24
 text = "Nível 1 — encontre a saída"
+
+[node name="PauseMenu" parent="." instance=ExtResource("5_pause")]
