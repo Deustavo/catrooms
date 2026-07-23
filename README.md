@@ -1,6 +1,7 @@
 # Catrooms
 
-Jogo 3D em primeira pessoa com gameplay de labirinto, feito em **Godot 4.3+**.
+Jogo 3D em primeira pessoa feito em **Godot 4.3+**. Cada nível é uma sala
+quadrada aberta — sem paredes internas, só as 4 paredes externas.
 
 ## Como rodar
 
@@ -20,8 +21,9 @@ Ou pela linha de comando: `godot --path .`
 | Olhar | Mouse |
 | Soltar/capturar mouse | Esc / clique |
 
-Objetivo: encontre o pilar verde brilhante (a saída). Cada nível gera um
-labirinto novo e maior.
+Objetivo: encontre o pilar verde brilhante (a saída), no canto oposto ao
+ponto de partida. Cada nível gera uma sala nova e maior, até o nível 10 —
+ao completá-lo o jogo volta ao menu inicial.
 
 ## Arquitetura
 
@@ -31,9 +33,9 @@ src/
     events.gd        Signal bus — sinais de interesse cruzado entre sistemas
     game_manager.gd  Progressão de níveis e RNG compartilhado
   player/          Controlador FPS (cena + script autocontidos)
-  maze/
-    maze_data.gd     Geração do labirinto — lógica PURA, sem árvore de cena
-    maze_builder.gd  Converte MazeData em geometria 3D (apresentação)
+  room/
+    room_builder.gd  Constrói a sala quadrada em geometria 3D (chão, teto,
+                      4 paredes externas, saída) — sem paredes internas
   levels/
     main.tscn/.gd    Cena principal — só orquestra, não tem lógica de jogo
   ui/
@@ -42,20 +44,17 @@ src/
 
 Princípios aplicados:
 
-- **Dados separados da apresentação**: `MazeData` gera e armazena o labirinto
-  sem tocar em nós 3D; `MazeBuilder` só desenha. Dá para testar a geração de
-  forma isolada e trocar a representação visual sem tocar no algoritmo.
-- **Signal bus para desacoplamento**: player, labirinto, HUD e GameManager não
-  se referenciam diretamente — comunicam-se por `Events`. "Signal up, call down".
-- **RNG injetado**: `MazeData.generate()` recebe o `RandomNumberGenerator`,
-  permitindo seeds fixas para níveis reproduzíveis e testes determinísticos.
+- **Sala aberta, sem geração de labirinto**: `RoomBuilder` recebe apenas o
+  tamanho do lado e desenha uma sala quadrada — chão, teto e as 4 paredes
+  externas. Não há paredes internas nem algoritmo de geração.
+- **Signal bus para desacoplamento**: player, sala, HUD e GameManager não se
+  referenciam diretamente — comunicam-se por `Events`. "Signal up, call down".
 - **Cenas autocontidas**: `player.tscn` funciona solto em qualquer cena.
 - **Recursos compartilhados**: todas as paredes reutilizam as mesmas malhas e
   shapes de colisão.
 
 ## Próximos passos sugeridos
 
-- Minimapa (renderizar `MazeData` num `TextureRect`)
-- Inimigos/objetivos dentro do labirinto
+- Inimigos/objetivos dentro da sala
 - Substituir caixas por `GridMap` + MeshLibrary com texturas
 - Áudio ambiente e passos

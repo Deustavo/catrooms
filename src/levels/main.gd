@@ -1,25 +1,29 @@
 extends Node3D
-## Orquestra o nível: reage a Events.level_started reconstruindo o labirinto
+## Orquestra o nível: reage a Events.level_started reconstruindo a sala
 ## e reposicionando o jogador. Não contém lógica de jogo nem de geração.
 
-@onready var _maze_builder: MazeBuilder = $MazeBuilder
+@onready var _room_builder: RoomBuilder = $RoomBuilder
 @onready var _player: Player = $Player
 
 
 func _ready() -> void:
 	Events.level_started.connect(_on_level_started)
+	Events.game_completed.connect(_on_game_completed)
 	GameManager.start_game()
 
 
 func _on_level_started(level: int) -> void:
 	# Deferred: o sinal pode chegar durante um callback de física (Area3D da
-	# saída), e reconstruir o labirinto libera corpos físicos.
+	# saída), e reconstruir a sala libera corpos físicos.
 	_rebuild_level.call_deferred(level)
 
 
 func _rebuild_level(level: int) -> void:
-	var size := GameManager.maze_size_for_level(level)
-	var maze := MazeData.new(size.x, size.y)
-	maze.generate(GameManager.rng)
-	_maze_builder.build(maze)
-	_player.teleport_to(_maze_builder.get_spawn_position())
+	var size := GameManager.room_size_for_level(level)
+	_room_builder.build(size)
+	_player.teleport_to(_room_builder.get_spawn_position())
+
+
+func _on_game_completed() -> void:
+	await get_tree().create_timer(3.0).timeout
+	get_tree().change_scene_to_file("res://src/ui/menu/main_menu.tscn")

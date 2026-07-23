@@ -1,7 +1,7 @@
-class_name MazeBuilder
+class_name RoomBuilder
 extends Node3D
-## Converte um MazeData em geometria 3D: chão, teto, paredes e gatilho de saída.
-## Malhas e shapes são compartilhados entre todas as paredes (recursos únicos).
+## Constrói uma sala quadrada aberta: chão, teto, as 4 paredes externas e o
+## gatilho de saída. Não há paredes internas — a sala é um espaço único.
 
 @export var cell_size := 3.0
 @export var wall_height := 3.0
@@ -10,24 +10,20 @@ extends Node3D
 @export var floor_material: Material
 @export var ceiling_material: Material
 
-var _maze: MazeData
+var _size := 0
 var _exit_consumed := false
 
-# Recursos compartilhados, dimensionados uma vez por build.
-var _h_wall_mesh: BoxMesh
-var _v_wall_mesh: BoxMesh
-var _h_wall_shape: BoxShape3D
-var _v_wall_shape: BoxShape3D
 
-
-func build(maze: MazeData) -> void:
-	_maze = maze
+## `size` é o lado da sala em células (a sala é sempre quadrada).
+func build(size: int) -> void:
+	assert(size > 0)
+	_size = size
 	_exit_consumed = false
 	_clear()
 	_prepare_shared_resources()
 	_build_floor_and_ceiling()
 	_build_walls()
-	_build_exit(Vector2i(maze.width - 1, maze.height - 1))
+	_build_exit(Vector2i(size - 1, size - 1))
 
 
 func get_cell_center(cell: Vector2i) -> Vector3:
@@ -51,23 +47,10 @@ func _prepare_shared_resources() -> void:
 	if ceiling_material == null:
 		ceiling_material = _make_material(Color(0.6, 0.57, 0.45))
 
-	# Paredes horizontais correm ao longo de X; verticais, ao longo de Z.
-	# O comprimento inclui a espessura para fechar os cantos.
-	var length := cell_size + wall_thickness
-	_h_wall_mesh = BoxMesh.new()
-	_h_wall_mesh.size = Vector3(length, wall_height, wall_thickness)
-	_h_wall_mesh.material = wall_material
-	_v_wall_mesh = BoxMesh.new()
-	_v_wall_mesh.size = Vector3(wall_thickness, wall_height, length)
-	_v_wall_mesh.material = wall_material
-	_h_wall_shape = BoxShape3D.new()
-	_h_wall_shape.size = _h_wall_mesh.size
-	_v_wall_shape = BoxShape3D.new()
-	_v_wall_shape.size = _v_wall_mesh.size
-
 
 func _build_floor_and_ceiling() -> void:
-	var total := Vector3(_maze.width * cell_size, 0.2, _maze.height * cell_size)
+	var side := _size * cell_size
+	var total := Vector3(side, 0.2, side)
 	var center_xz := Vector3(total.x / 2.0, 0.0, total.z / 2.0)
 
 	var floor_body := StaticBody3D.new()
@@ -86,44 +69,44 @@ func _build_floor_and_ceiling() -> void:
 	add_child(ceiling)
 
 
-## Evita paredes duplicadas: cada célula constrói apenas NORTH e WEST;
-## a última linha/coluna também constrói SOUTH/EAST (bordas externas).
+## Constrói apenas o perímetro da sala — nenhuma parede interna.
 func _build_walls() -> void:
 	var walls := Node3D.new()
 	walls.name = "Walls"
 	add_child(walls)
 
-	for y in _maze.height:
-		for x in _maze.width:
-			var cell := Vector2i(x, y)
-			if _maze.has_wall(cell, MazeData.Dir.NORTH):
-				_spawn_wall(walls, _north_wall_position(cell), true)
-			if _maze.has_wall(cell, MazeData.Dir.WEST):
-				_spawn_wall(walls, _west_wall_position(cell), false)
-			if y == _maze.height - 1 and _maze.has_wall(cell, MazeData.Dir.SOUTH):
-				_spawn_wall(walls, _north_wall_position(cell + Vector2i(0, 1)), true)
-			if x == _maze.width - 1 and _maze.has_wall(cell, MazeData.Dir.EAST):
-				_spawn_wall(walls, _west_wall_position(cell + Vector2i(1, 0)), false)
+	var side := _size * cell_size
+	var half_side := side / 2.0
+	var length := side + wall_thickness
+
+	var h_mesh := BoxMesh.new()
+	h_mesh.size = Vector3(length, wall_height, wall_thickness)
+	h_mesh.material = wall_material
+	var h_shape := BoxShape3D.new()
+	h_shape.size = h_mesh.size
+
+	var v_mesh := BoxMesh.new()
+	v_mesh.size = Vector3(wall_thickness, wall_height, length)
+	v_mesh.material = wall_material
+	var v_shape := BoxShape3D.new()
+	v_shape.size = v_mesh.size
+
+	_spawn_wall(walls, Vector3(half_side, wall_height / 2.0, 0.0), h_mesh, h_shape)
+	_spawn_wall(walls, Vector3(half_side, wall_height / 2.0, side), h_mesh, h_shape)
+	_spawn_wall(walls, Vector3(0.0, wall_height / 2.0, half_side), v_mesh, v_shape)
+	_spawn_wall(walls, Vector3(side, wall_height / 2.0, half_side), v_mesh, v_shape)
 
 
-func _north_wall_position(cell: Vector2i) -> Vector3:
-	return Vector3((cell.x + 0.5) * cell_size, wall_height / 2.0, cell.y * cell_size)
-
-
-func _west_wall_position(cell: Vector2i) -> Vector3:
-	return Vector3(cell.x * cell_size, wall_height / 2.0, (cell.y + 0.5) * cell_size)
-
-
-func _spawn_wall(parent: Node3D, wall_position: Vector3, horizontal: bool) -> void:
+func _spawn_wall(parent: Node3D, wall_position: Vector3, mesh: Mesh, shape: Shape3D) -> void:
 	var body := StaticBody3D.new()
 	body.position = wall_position
 
 	var mesh_instance := MeshInstance3D.new()
-	mesh_instance.mesh = _h_wall_mesh if horizontal else _v_wall_mesh
+	mesh_instance.mesh = mesh
 	body.add_child(mesh_instance)
 
 	var collision := CollisionShape3D.new()
-	collision.shape = _h_wall_shape if horizontal else _v_wall_shape
+	collision.shape = shape
 	body.add_child(collision)
 
 	parent.add_child(body)

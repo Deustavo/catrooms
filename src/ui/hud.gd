@@ -7,7 +7,12 @@ extends CanvasLayer
 
 func _ready() -> void:
 	Events.level_started.connect(_on_level_started)
+	Events.game_completed.connect(_on_game_completed)
 
 
 func _on_level_started(level: int) -> void:
 	_level_label.text = "Nível %d — encontre a saída" % level
+
+
+func _on_game_completed() -> void:
+	_level_label.text = "Você venceu! Voltando ao menu..."

@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://src/levels/main.gd" id="1_main"]
-[ext_resource type="Script" path="res://src/maze/maze_builder.gd" id="2_builder"]
+[ext_resource type="Script" path="res://src/room/room_builder.gd" id="2_builder"]
 [ext_resource type="PackedScene" path="res://src/player/player.tscn" id="3_player"]
 [ext_resource type="Script" path="res://src/ui/hud.gd" id="4_hud"]
 [ext_resource type="PackedScene" path="res://src/ui/menu/pause_menu.tscn" id="5_pause"]
@@ -22,7 +22,7 @@ script = ExtResource("1_main")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
 
-[node name="MazeBuilder" type="Node3D" parent="."]
+[node name="RoomBuilder" type="Node3D" parent="."]
 script = ExtResource("2_builder")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
