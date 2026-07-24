@@ -5,7 +5,7 @@ extends CharacterBody3D
 ## alcance, vaga em direções aleatórias. Exibe uma borda laranja no sprite
 ## enquanto estiver perseguindo.
 
-@export var speed := 1.2
+@export var speed := 2.2
 @export var wander_direction_interval := 2.0
 
 var target: Node3D

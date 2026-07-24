@@ -26,6 +26,12 @@ func start_game() -> void:
 	Events.level_started.emit(current_level)
 
 
+## Recomeça o nível atual (usado ao morrer), sem voltar ao nível 1.
+func restart_level() -> void:
+	_game_over = false
+	Events.level_started.emit(current_level)
+
+
 ## Lado da sala (quadrada) cresce com o nível, até um teto.
 func room_size_for_level(level: int) -> int:
 	return mini(BASE_ROOM_SIZE + (level - 1) * SIZE_GROWTH_PER_LEVEL, MAX_ROOM_SIZE)

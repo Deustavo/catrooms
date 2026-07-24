@@ -1,6 +1,6 @@
 extends CanvasLayer
 ## Tela de Game Over: exibida quando um inimigo encosta no jogador.
-## Oferece recomeçar do nível 1 ou voltar ao menu inicial.
+## Oferece recomeçar o nível atual ou voltar ao menu inicial.
 ## process_mode ALWAYS para continuar recebendo input com a árvore pausada.
 
 @onready var _restart_button: Button = %RestartButton
@@ -24,7 +24,7 @@ func _on_restart_pressed() -> void:
 	hide()
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	GameManager.start_game()
+	GameManager.restart_level()
 
 
 func _on_main_menu_pressed() -> void:
