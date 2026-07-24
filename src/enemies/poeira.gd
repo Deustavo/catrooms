@@ -2,7 +2,8 @@ class_name Poeira
 extends CharacterBody3D
 ## Inimigo básico: um quadro 2D (billboard) sempre voltado para a câmera.
 ## Persegue o alvo quando ele está dentro de chase_range; fora desse
-## alcance, vaga em direções aleatórias.
+## alcance, vaga em direções aleatórias. Exibe uma borda laranja no sprite
+## enquanto estiver perseguindo.
 
 @export var speed := 1.2
 @export var wander_direction_interval := 2.0
@@ -12,8 +13,10 @@ var chase_range := INF
 
 var _wander_direction := Vector3.ZERO
 var _wander_timer := 0.0
+var _is_chasing := false
 
 @onready var _touch_area: Area3D = $TouchArea
+@onready var _mesh_material: ShaderMaterial = $MeshInstance3D.get_surface_override_material(0)
 
 
 func _ready() -> void:
@@ -30,17 +33,24 @@ func _physics_process(delta: float) -> void:
 	velocity.z = direction.z * speed
 
 	move_and_slide()
+	_update_chase_outline()
 
 
 func _compute_direction(delta: float) -> Vector3:
+	_is_chasing = false
 	if target != null:
 		var to_target := target.global_position - global_position
 		to_target.y = 0.0
 		var distance := to_target.length()
 		if distance <= chase_range:
+			_is_chasing = true
 			return to_target.normalized() if distance > 0.1 else Vector3.ZERO
 
 	return _wander(delta)
+
+
+func _update_chase_outline() -> void:
+	_mesh_material.set_shader_parameter("chasing", _is_chasing)
 
 
 func _wander(delta: float) -> Vector3:

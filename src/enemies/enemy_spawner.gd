@@ -1,9 +1,10 @@
 class_name EnemySpawner
 extends Node3D
 ## Popula a sala com inimigos a cada nível. A partir do FIRST_ENEMY_LEVEL
-## surge 1 poeira, dobrando a quantidade a cada nível seguinte. Posições são
-## sorteadas aleatoriamente entre as células da sala, evitando a saída do
-## jogador e uma área segura ao redor do spawn.
+## surge 1 poeira, dobrando a quantidade a cada nível seguinte. Um inimigo é
+## sempre posicionado no centro da sala; os demais são sorteados
+## aleatoriamente entre as células restantes, evitando a saída do jogador e
+## uma área segura ao redor do spawn.
 
 const POEIRA_SCENE := preload("res://src/enemies/poeira.tscn")
 const FIRST_ENEMY_LEVEL := 2
@@ -21,16 +22,24 @@ func spawn_for_level(level: int, size: int, room_builder: RoomBuilder, target: N
 		return
 
 	var count := 1 << (level - FIRST_ENEMY_LEVEL)
-	var excluded_cells := [Vector2i(size - 1, size - 1)]
+	var center_cell := Vector2i(size / 2, size / 2)
+	var excluded_cells := [Vector2i(size - 1, size - 1), center_cell]
 	var chase_range := (size * room_builder.cell_size) / 4.0
 
-	for i in count:
+	_spawn_enemy(center_cell, room_builder, target, chase_range)
+	for i in count - 1:
 		var cell := _random_cell(size, excluded_cells)
-		var enemy: Poeira = POEIRA_SCENE.instantiate()
-		add_child(enemy)
-		enemy.global_position = room_builder.get_cell_center(cell) + Vector3.UP * 0.2
-		enemy.target = target
-		enemy.chase_range = chase_range
+		_spawn_enemy(cell, room_builder, target, chase_range)
+
+
+func _spawn_enemy(
+	cell: Vector2i, room_builder: RoomBuilder, target: Node3D, chase_range: float
+) -> void:
+	var enemy: Poeira = POEIRA_SCENE.instantiate()
+	add_child(enemy)
+	enemy.global_position = room_builder.get_cell_center(cell) + Vector3.UP * 0.2
+	enemy.target = target
+	enemy.chase_range = chase_range
 
 
 func _clear() -> void:
