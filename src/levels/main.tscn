@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://src/ui/menu/pause_menu.tscn" id="5_pause"]
 [ext_resource type="Script" path="res://src/enemies/enemy_spawner.gd" id="6_enemies"]
 [ext_resource type="PackedScene" path="res://src/ui/menu/game_over_menu.tscn" id="7_game_over"]
+[ext_resource type="PackedScene" path="res://src/ui/menu/win_menu.tscn" id="8_win"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -47,3 +48,5 @@ text = "Nível 1 — encontre a saída"
 [node name="PauseMenu" parent="." instance=ExtResource("5_pause")]
 
 [node name="GameOverMenu" parent="." instance=ExtResource("7_game_over")]
+
+[node name="WinMenu" parent="." instance=ExtResource("8_win")]

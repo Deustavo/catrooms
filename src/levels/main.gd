@@ -9,7 +9,6 @@ extends Node3D
 
 func _ready() -> void:
 	Events.level_started.connect(_on_level_started)
-	Events.game_completed.connect(_on_game_completed)
 	GameManager.start_game()
 
 
@@ -24,8 +23,3 @@ func _rebuild_level(level: int) -> void:
 	_room_builder.build(size)
 	_player.teleport_to(_room_builder.get_spawn_position())
 	_enemy_spawner.spawn_for_level(level, size, _room_builder, _player)
-
-
-func _on_game_completed() -> void:
-	await get_tree().create_timer(3.0).timeout
-	get_tree().change_scene_to_file("res://src/ui/menu/main_menu.tscn")
