@@ -6,6 +6,7 @@ extends CharacterBody3D
 ## enquanto estiver perseguindo.
 
 @export var speed := 2.2
+@export var wander_speed := 0.8
 @export var wander_direction_interval := 2.0
 
 var target: Node3D
@@ -29,8 +30,9 @@ func _physics_process(delta: float) -> void:
 		velocity += get_gravity() * delta
 
 	var direction := _compute_direction(delta)
-	velocity.x = direction.x * speed
-	velocity.z = direction.z * speed
+	var current_speed := speed if _is_chasing else wander_speed
+	velocity.x = direction.x * current_speed
+	velocity.z = direction.z * current_speed
 
 	move_and_slide()
 	_update_chase_outline()
